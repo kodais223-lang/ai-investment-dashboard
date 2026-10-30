@@ -1,1 +1,22 @@
-
+<!doctype html>
+<html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0b1020"><title>AI投資ダッシュボード</title>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:22px 16px 40px;background:#0b1020;color:#eef2ff;font:16px -apple-system,BlinkMacSystemFont,sans-serif;max-width:760px;margin:auto}h1{font-size:26px}.tag{color:#93c5fd;font-size:12px;letter-spacing:2px}.card{background:#151d31;border:1px solid #293550;border-radius:16px;padding:16px;margin:12px 0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.label{font-size:12px;color:#aab5cf}.metric{font-size:24px;font-weight:bold;margin-top:8px;overflow-wrap:anywhere}p{color:#b5bfd3;line-height:1.6}.notice{border-left:3px solid #fbbf24;padding-left:12px;font-size:14px}input{max-width:100%;margin:12px 0;color:white}table{width:100%;border-collapse:collapse;font-size:12px}td,th{padding:9px 5px;border-bottom:1px solid #293550;text-align:left}.scroll{overflow:auto}
+</style></head><body>
+<div class="tag">PERSONAL INVESTMENT TRACKER</div><h1>AI投資ダッシュボード</h1>
+<p>初期資金100万円｜標準リスク｜日本株・米国株・ETF</p>
+<div class="card notice">バックテスト結果はまだ登録されていません。実データを読み込むまで、利益やリターンは表示しません。</div>
+<div class="grid">
+<div class="card"><div class="label">資産評価額</div><div class="metric" id="equity">—</div></div>
+<div class="card"><div class="label">累計損益</div><div class="metric" id="pnl">—</div></div>
+<div class="card"><div class="label">リターン</div><div class="metric" id="ret">—</div></div>
+<div class="card"><div class="label">最大下落率</div><div class="metric" id="mdd">—</div></div>
+</div>
+<div class="card"><h2>バックテストCSV読み込み</h2><p>バックテストで作成した日次CSVを選択してください。</p><input id="file" type="file" accept=".csv"><p id="status">CSV未読み込み</p></div>
+<div class="card"><h2>日次データ（直近30行）</h2><div class="scroll"><table><thead><tr id="head"></tr></thead><tbody id="rows"></tbody></table></div></div>
+<div class="card"><h2>シミュレーション条件</h2><p>期間：2024/10/30〜2026/10/30<br>初期資金：1,000,000円<br>最大投資比率：90%<br>最大保有：5銘柄<br>信用取引・空売りなし<br>価格モメンタムと移動平均を用いる想定</p><p>このページ自体は静的表示です。株価取得、売買判断、バックテスト、日次更新は別途プログラムと定期実行環境が必要です。</p></div>
+<script>
+const fmt=n=>Number.isFinite(n)?n.toLocaleString('ja-JP',{maximumFractionDigits:2}):'—';
+function parse(s){let a=[],v='',q=false;for(let i=0;i<s.length;i++){let c=s[i];if(c==='"'&&s[i+1]==='"'&&q){v+='"';i++}else if(c==='"')q=!q;else if(c===','&&!q){a.push(v);v=''}else v+=c}a.push(v);return a}
+document.getElementById('file').addEventListener('change',async e=>{let f=e.target.files[0];if(!f)return;let lines=(await f.text()).trim().split(/\r?\n/).filter(Boolean);if(lines.length<2){document.getElementById('status').textContent='データ行がありません';return}let h=parse(lines[0]),d=lines.slice(1).map(parse),last=d[d.length-1];let find=re=>h.findIndex(x=>re.test(x.toLowerCase()));let i=find(/equity|portfolio_value|total_value|資産評価額/),p=find(/pnl|profit|損益/),r=find(/return|リターン/),m=find(/mdd|drawdown|ドローダウン/);if(i>=0)document.getElementById('equity').textContent=fmt(Number(last[i]))+'円';if(p>=0)document.getElementById('pnl').textContent=fmt(Number(last[p]))+'円';if(r>=0)document.getElementById('ret').textContent=last[r];if(m>=0)document.getElementById('mdd').textContent=last[m];document.getElementById('head').innerHTML=h.map(x=>'<th>'+x.replace(/[<>]/g,'')+'</th>').join('');document.getElementById('rows').innerHTML=d.slice(-30).reverse().map(row=>'<tr>'+row.map(x=>'<td>'+x.replace(/[<>]/g,'')+'</td>').join('')+'</tr>').join('');document.getElementById('status').textContent=f.name+'：'+d.length+'行読み込み完了'});
+</script></body></html>
